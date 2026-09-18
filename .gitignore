@@ -1,0 +1,8 @@
+.env
+tasks.json
+models/
+uploads/
+__pycache__/
+*.pyc
+proposal/node_modules/
+knowledge_base.md
