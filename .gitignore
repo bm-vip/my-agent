@@ -1,7 +1,8 @@
 .env
-tasks.json
 models/
 uploads/
 __pycache__/
 *.pyc
 knowledge_base.md
+assets.json
+assets.json.tmp
