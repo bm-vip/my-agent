@@ -60,11 +60,11 @@ services:
 
   web:
     build: .
-    env_file: .env # OPENROUTER_API_KEY, CRM_DB_* — see .env
+    env_file: .env # OPENROUTER_API_KEY, DB_* — see .env
     environment:
       MILVUS_URI: http://milvus:19530
       TEI_URL: http://embeddings:80/embed
-      CRM_DB_HOST: host.docker.internal # crm-postgres runs as its own separate container, reached via the host
+      DB_HOST: host.docker.internal # postgres runs as its own separate container, reached via the host
       # budget-management-system's own docker-compose stack runs separately and is reached via the
       # host too — BUDGET_API_KEY/BUDGET_PERSON_ID still come from .env (env_file above).
       BUDGET_API_BASE_URL: http://host.docker.internal:8090

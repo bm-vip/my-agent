@@ -1,5 +1,5 @@
 """
-Web UI for My Agent (agent_openrouter.py) — chat, RAG, budget & CRM tools, and every structured
+Web UI for My Agent (agent_openrouter.py) — chat, RAG, budget & database tools, and every structured
 interrupt (entry forms / yes-no confirm), all in one place.
 
 Run:

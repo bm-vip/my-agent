@@ -2,7 +2,7 @@
 My Agent — the main chat. One LangGraph that combines:
 - RAG (Milvus + TEI) for knowledge-base questions
 - Live budget data: balance, transactions, budgets, assets (budget-management-system API)
-- query_crm_database: SELECTs run immediately; INSERT/UPDATE/DELETE wait for a yes/no confirm
+- query_database: SELECTs run immediately; INSERT/UPDATE/DELETE wait for a yes/no confirm
 - open_entry_form: a prefilled, validated bottom sheet to record an expense, income, budget or asset
   All human-in-the-loop steps use interrupt_protocol.py, so the web UI (or any future client) renders
   them from one shared JSON schema instead of the agent knowing anything about HTML.
@@ -126,7 +126,7 @@ def base_system_message():
     today = datetime.date.today().isoformat()
     return {
         "role": "system",
-        "content": f"Today's date is {today}. You are My Agent. You help the user query the CRM database, track their personal budget (balance, income/expense entries, "
+        "content": f"Today's date is {today}. You are My Agent. You help the user query your PostgreSQL database, track their personal budget (balance, income/expense entries, "
         "category budgets), and answer questions using the knowledge-base "
         "excerpts provided in context. Answer directly, the way a colleague who already knows "
         "this would.\n\n"
@@ -156,9 +156,9 @@ TOOLS = [
     {
         "type": "function",
         "function": {
-            "name": "query_crm_database",
+            "name": "query_database",
             "description": (
-                "Run a SQL query against the LOCAL DEV crm_db PostgreSQL database. SELECT queries "
+                "Run a SQL query against the local app_db PostgreSQL database. SELECT queries "
                 "run immediately. For INSERT/UPDATE/DELETE, call this tool directly as soon as the "
                 "user's intent is clear — a confirm/cancel UI is shown automatically before anything "
                 "is written."
@@ -241,11 +241,11 @@ TOOLS = [
 def _run_sql(sql: str) -> str:
     try:
         conn = psycopg2.connect(
-            host=os.environ.get("CRM_DB_HOST", "localhost"),
-            port=os.environ.get("CRM_DB_PORT", "5432"),
-            dbname=os.environ.get("CRM_DB_NAME", "crm_db"),
-            user=os.environ.get("CRM_DB_USER", "postgres"),
-            password=os.environ.get("CRM_DB_PASSWORD", ""),
+            host=os.environ.get("DB_HOST", "localhost"),
+            port=os.environ.get("DB_PORT", "5432"),
+            dbname=os.environ.get("DB_NAME", "app_db"),
+            user=os.environ.get("DB_USER", "postgres"),
+            password=os.environ.get("DB_PASSWORD", ""),
         )
         try:
             with conn:
@@ -292,7 +292,7 @@ def agent_node(state: AgentState):
     name = call.function.name
     args = json.loads(call.function.arguments or "{}")
 
-    if name == "query_crm_database":
+    if name == "query_database":
         sql = args["sql"].strip()
         if _is_write_sql(sql):
             update = {"messages": [assistant_message, _tool_msg(call.id, "Awaiting confirmation.")], "pending_sql": sql}
@@ -403,7 +403,7 @@ def _list_budgets() -> list:
 
 
 def ask_db_confirm(state: AgentState):
-    payload = confirm_interrupt(str(uuid.uuid4()), f"Execute this SQL against crm_db?\n\n{state['pending_sql']}")
+    payload = confirm_interrupt(str(uuid.uuid4()), f"Execute this SQL against app_db?\n\n{state['pending_sql']}")
     response = interrupt(payload)
 
     if is_confirmed(response):
